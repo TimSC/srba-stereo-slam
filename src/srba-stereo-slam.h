@@ -39,11 +39,11 @@ class mySRBA : public myRBAEngine
 private : 
 	bool									m_lc;									//!< Indicates if a loop closure has been detected
 	size_t									m_lc_old_kf_id;							//!< ID of the old KF for the loop closure
-	deque<TKeyFrameID> 						m_localmap_center_ids;					//!< Contains the IDs of the localmap centers for each KF
-	map<TKeyFrameID,size_t> 				m_submap_kfs_from_localmap_center;		//!< Contains the number of KF that a certain localmap contains
+	std::deque<TKeyFrameID> 						m_localmap_center_ids;					//!< Contains the IDs of the localmap centers for each KF
+	std::map<TKeyFrameID,size_t> 				m_submap_kfs_from_localmap_center;		//!< Contains the number of KF that a certain localmap contains
 	
-	deque< set<TKeyFrameID> >				m_kf_localmap_center_ID;						//!< Contains the IDs of the localmap centers for each KF
-	map< TKeyFrameID, set<TKeyFrameID> >	m_localmap_kf_IDs;							//!< Contains the number of KF that a certain localmap contains
+	std::deque< std::set<TKeyFrameID> >				m_kf_localmap_center_ID;						//!< Contains the IDs of the localmap centers for each KF
+	std::map< TKeyFrameID, std::set<TKeyFrameID> >	m_localmap_kf_IDs;							//!< Contains the number of KF that a certain localmap contains
 	
 	pose_t m_initial_kf_pose;														//!< Initial estimation of the pose of the added KF wrt the previous one
 
@@ -87,23 +87,23 @@ public:
 
 	/** Prints the number of KFs in each localmap */
 	inline void dumpKfsInLocalmaps() {
-		cout << "Kfs within localmaps:" << endl;
-		for( map< TKeyFrameID, set<TKeyFrameID> >::iterator it = m_localmap_kf_IDs.begin(); it != m_localmap_kf_IDs.end(); ++it )
+		std::cout << "Kfs within localmaps:" << std::endl;
+		for( std::map< TKeyFrameID, std::set<TKeyFrameID> >::iterator it = m_localmap_kf_IDs.begin(); it != m_localmap_kf_IDs.end(); ++it )
 		{
-			cout << "	Localmap " << it->first << "(" << it->second.size() << " kfs)" << endl;
-			for( set<TKeyFrameID>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2 )
-				cout << "		--> " << *it2 << endl; 
+			std::cout << "	Localmap " << it->first << "(" << it->second.size() << " kfs)" << std::endl;
+			for( std::set<TKeyFrameID>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2 )
+				std::cout << "		--> " << *it2 << std::endl; 
 		} // end-for
 	} // end -- dumpNumberOfKFs
 
 	/** Prints the localmap centers for all the defined KFs */
 	inline void dumpLocalmapCenters() {
-		cout << "Localmap centers:" << endl;
+		std::cout << "Localmap centers:" << std::endl;
 		for( size_t i = 0; i < m_kf_localmap_center_ID.size(); i++ )
 		{
-			cout << "	Kf " << i << endl;
-			for( set<TKeyFrameID>::iterator it = m_kf_localmap_center_ID[i].begin(); it != m_kf_localmap_center_ID[i].end(); ++it )
-				cout << "		--> " << *it << endl;
+			std::cout << "	Kf " << i << std::endl;
+			for( std::set<TKeyFrameID>::iterator it = m_kf_localmap_center_ID[i].begin(); it != m_kf_localmap_center_ID[i].end(); ++it )
+				std::cout << "		--> " << *it << std::endl;
 		}
 	} // end -- dumpLocalmapCenters
 
@@ -130,9 +130,9 @@ private:
 		//	:: set KF#0 to have itself as its base
 		if( new_kf_id == 1 )
 		{
-			set<TKeyFrameID> aux; aux.insert(0);
+			std::set<TKeyFrameID> aux; aux.insert(0);
 			m_kf_localmap_center_ID.push_back( aux );
-			m_localmap_kf_IDs[0] = set<TKeyFrameID>();
+			m_localmap_kf_IDs[0] = std::set<TKeyFrameID>();
 		}
 
 		//	:: get sRBA state
@@ -155,7 +155,7 @@ private:
 		{
 			//	:: not a localmap base --> just add the new kf to the current localmap
 			//	:: set the current localmap center as the center for the new kf
-			set<TKeyFrameID> aux; aux.insert(currentLocalmapBaseId);
+			std::set<TKeyFrameID> aux; aux.insert(currentLocalmapBaseId);
 			m_kf_localmap_center_ID.push_back( aux );
 
 			//	:: create the edge
@@ -199,7 +199,7 @@ private:
 			srba::internal::make_ordered_list_base_kfs<traits_t,typename rba_engine_t::rba_problem_state_t>(obs, my_rba_state, obs_for_each_base_sorted);
 				
 			//	:: make vote list for each central KF:
-			map<TKeyFrameID,size_t>  obs_for_each_area;
+			std::map<TKeyFrameID,size_t>  obs_for_each_area;
 			for( base_sorted_lst_t::const_iterator it = obs_for_each_base_sorted.begin(); it != obs_for_each_base_sorted.end(); ++it )
 			{
 				const size_t      num_obs_this_base = it->first;
@@ -211,9 +211,9 @@ private:
 				
 			//	:: sort by votes:
 			my_base_sorted_lst_t   obs_for_each_area_sorted;
-			for( map<TKeyFrameID,size_t>::const_iterator it = obs_for_each_area.begin(); it != obs_for_each_area.end(); ++it )
+			for( std::map<TKeyFrameID,size_t>::const_iterator it = obs_for_each_area.begin(); it != obs_for_each_area.end(); ++it )
 			{
-				obs_for_each_area_sorted.insert( make_pair(it->second,it->first) );
+				obs_for_each_area_sorted.insert( std::make_pair(it->second,it->first) );
 			}
 
 			//	:: go thru candidate areas:
@@ -230,12 +230,12 @@ private:
 
 				rba_problem_state_t::TSpanningTree::next_edge_maps_t::const_iterator it_from = my_rba_state.spanning_tree.sym.next_edge.find(from_id);
 
-				topo_dist_t  found_distance = numeric_limits<topo_dist_t>::max();
+				topo_dist_t  found_distance = std::numeric_limits<topo_dist_t>::max();
 
 				if (it_from != my_rba_state.spanning_tree.sym.next_edge.end())
 				{
-					const map<TKeyFrameID,TSpanTreeEntry> & from_Ds = it_from->second;
-					map<TKeyFrameID,TSpanTreeEntry>::const_iterator it_to_dist = from_Ds.find(to_id);
+					const std::map<TKeyFrameID,TSpanTreeEntry> & from_Ds = it_from->second;
+					std::map<TKeyFrameID,TSpanTreeEntry>::const_iterator it_to_dist = from_Ds.find(to_id);
 
 					if (it_to_dist != from_Ds.end())
 						found_distance = it_to_dist->second.distance;
@@ -263,7 +263,7 @@ private:
 							m_kf_localmap_center_ID[new_kf_id].insert(central_kf_id);
 						else
 						{
-							set<TKeyFrameID> aux; aux.insert(central_kf_id);
+							std::set<TKeyFrameID> aux; aux.insert(central_kf_id);
 							m_kf_localmap_center_ID.push_back( aux );
 					}	
 
@@ -274,13 +274,13 @@ private:
 					}
 					else
 					{
-						//if( this->m_verbose_level >= 1 ) cout << "[edge_creation_policy] Skipped extra edge " << central_kf_id <<"->"<<new_kf_id << " with #obs: "<< num_obs_this_base << " for too few shared obs!" << endl;
+						//if( this->m_verbose_level >= 1 ) std::cout << "[edge_creation_policy] Skipped extra edge " << central_kf_id <<"->"<<new_kf_id << " with #obs: "<< num_obs_this_base << " for too few shared obs!" << std::endl;
 					}
 				} // end-distance
 			} // end-for
 			// Recheck: if even with the last attempt we don't have any edge, it's bad:
 			ASSERTMSG_(new_k2k_edge_ids.size()>=1, mrpt::format("Error for new KF#%u: no suitable linking KF found with a minimum of %u common observation: the node becomes isolated of the graph!", static_cast<unsigned int>(new_kf_id),static_cast<unsigned int>(MINIMUM_OBS_TO_LOOP_CLOSURE) ))
-			m_localmap_kf_IDs[new_kf_id] = set<TKeyFrameID>();
+			m_localmap_kf_IDs[new_kf_id] = std::set<TKeyFrameID>();
 		}
 
 	} // end-edge_creation_policy

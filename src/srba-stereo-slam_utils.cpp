@@ -1,6 +1,8 @@
+#include <iostream>
 #include "srba-stereo-slam_utils.h"
 #include "srba-stereo-slam_common.h"
 #include "srba-stereo-slam.h"
+using namespace std;
 
 extern TGeneralOptions general_options;
 
@@ -86,7 +88,7 @@ void show_kf_numbers(
 	COpenGLViewportPtr vp = scene->getViewport("keyframes");
 	for( size_t k = 0; k < ret.size(); ++k )
 	{
-		obj = vp->getByName( mrpt::format("ret%d_score",k) );
+		obj = vp->getByName( mrpt::format("ret%ld_score",k) );
 		if( obj )
 		{
 			CTextPtr score_txt = static_cast<CTextPtr>(obj);
@@ -94,15 +96,15 @@ void show_kf_numbers(
 			score_txt->setVisibility();
 		}
 
-		obj = vp->getByName( mrpt::format("ret%d_id",k) );
+		obj = vp->getByName( mrpt::format("ret%ld_id",k) );
 		if( obj )
 		{
 			CTextPtr id_txt = static_cast<CTextPtr>(obj);
-			id_txt->setString( mrpt::format("%d",ret[k].Id) );
+			id_txt->setString( mrpt::format("%ld",ret[k].Id) );
 			id_txt->setVisibility();
 		}
 
-		obj = vp->getByName( mrpt::format("ret%d_box",k) );
+		obj = vp->getByName( mrpt::format("ret%ld_box",k) );
 		if( obj )
 		{
 			CBoxPtr box = static_cast<CBoxPtr>(obj);

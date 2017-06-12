@@ -5,7 +5,6 @@
 #include <cv.h>
 #include <highgui.h>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
 
 // mrpt
 #include <mrpt/gui/CDisplayWindow3D.h>
@@ -52,15 +51,15 @@
 #define DUMP_VECTORLIKE(_v) \
 	if( _v.size() > 0 ) { \
 	for(size_t k = 0; k < _v.size()-1; ++k) \
-	cout << #_v << "[" << k << "] = " << _v[k] << ", "; \
-	cout << #_v << "[" << (_v.size()-1) << "] = " << *(_v.rbegin()) << endl; }
+	std::cout << #_v << "[" << k << "] = " << _v[k] << ", "; \
+	std::cout << #_v << "[" << (_v.size()-1) << "] = " << *(_v.rbegin()) << std::endl; }
 	
 #define UNINITIALIZED_TRACKED_NUMBER -1
-#define GENERATE_NAME_WITH_KF(STR) mrpt::format("%s\\%s_kf%04d.txt", general_options.out_dir.c_str(), #STR, this->m_kf_ID)
-#define GENERATE_NAME_WITH_2KF(STR,OKF_ID) mrpt::format("%s\\%s_kf%04d_with_kf%04d.txt", general_options.out_dir.c_str(), #STR, this->m_kf_ID, OKF_ID)
-#define GENERATE_NAME_WITH_KF_OUT(STR,KF) mrpt::format("%s\\%s_kf%04d.txt", general_options.out_dir.c_str(), #STR, KF.m_kf_ID)
-#define GENERATE_NAME_WITH_2KF_OUT(_STR,_ID1,_ID2) mrpt::format("%s\\%s_kf%04d_with_kf%04d.txt", general_options.out_dir.c_str(), #_STR, _ID1, _ID2)
-#define DUMP_BOOL_VAR_TO_CONSOLE(_MSG,_VAR) cout << _MSG; _VAR ? cout << "Yes " : cout << "No "; cout << endl;
+#define GENERATE_NAME_WITH_KF(STR) mrpt::format("%s\\%s_kf%04ld.txt", general_options.out_dir.c_str(), #STR, this->m_kf_ID)
+#define GENERATE_NAME_WITH_2KF(STR,OKF_ID) mrpt::format("%s\\%s_kf%04ld_with_kf%04ld.txt", general_options.out_dir.c_str(), #STR, this->m_kf_ID, OKF_ID)
+#define GENERATE_NAME_WITH_KF_OUT(STR,KF) mrpt::format("%s\\%s_kf%04ld.txt", general_options.out_dir.c_str(), #STR, KF.m_kf_ID)
+#define GENERATE_NAME_WITH_2KF_OUT(_STR,_ID1,_ID2) mrpt::format("%s\\%s_kf%04ld_with_kf%04ld.txt", general_options.out_dir.c_str(), #_STR, _ID1, _ID2)
+#define DUMP_BOOL_VAR_TO_CONSOLE(_MSG,_VAR) std::cout << _MSG; _VAR ? std::cout << "Yes " : std::cout << "No "; std::cout << std::endl;
 #define VERBOSE_LEVEL(_LEV) if( general_options.verbose_level >= _LEV ) std::cout// System KFs
 #define INVALID_KF_ID -1
 #define INVALID_IDX -1											// to do: take these two lines to the header file

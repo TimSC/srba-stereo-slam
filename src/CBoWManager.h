@@ -2,9 +2,9 @@
 
 // bag of words
 #include "DBoW2.h"		// defines Surf64Vocabulary and Surf64Database
-#include "DUtils.h"
-#include "DUtilsCV.h"	// defines macros CVXX
-#include "DVision.h"
+#include "DUtils/DUtils.h"
+#include "DUtilsCV/DUtilsCV.h"	// defines macros CVXX
+#include "DVision/DVision.h"
 
 // stereo slam keyframe class
 #include <mrpt/utils/CConfigFile.h>

@@ -7,7 +7,6 @@
 #include <cv.h>
 #include <highgui.h>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
 
 // #include "srba-stereo-slam.h"
 #include <srba.h>
@@ -33,29 +32,29 @@ STRUCT: Data association information
 typedef struct t_kf_da_info {
 	size_t								kf_idx;				//!< Index of the 'other' KF
 	size_t								tracked_matches;	//!< Number of tracked matches with the 'other' KF
-	vector< pair< size_t, double > >	tracking_info;		//!< Pair of 'other_match_idx' -> 'mean_distance'. Vector size == number of current matches
+	std::vector< std::pair< size_t, double > >	tracking_info;		//!< Pair of 'other_match_idx' -> 'mean_distance'. Vector size == number of current matches
 
 	t_kf_da_info() : 
 		kf_idx(INVALID_KF_ID), 
 		tracked_matches(0), 
-		tracking_info( vector< pair< size_t, double > >() ) 
+		tracking_info( std::vector< std::pair< size_t, double > >() ) 
 	{}
 
 } t_kf_da_info;
-typedef vector<t_kf_da_info> TVectorKfsDaInfo;			// Vector of DA information, one for each KEYFRAME compared with the current one
+typedef std::vector<t_kf_da_info> TVectorKfsDaInfo;			// Vector of DA information, one for each KEYFRAME compared with the current one
 
 /*********************************************
 STRUCT: Loop closure information
 **********************************************/
 typedef struct TLoopClosureInfo {
-	vector<TKeyFrameID> similar_kfs;		//!< A vector containing the ids of the KFs similar to this one
+	std::vector<TKeyFrameID> similar_kfs;		//!< A vector containing the ids of the KFs similar to this one
 	TKeyFrameID			lc_id;				//!< In case there is loop closure, here is the target KF's ID
-	vector<CPose3D>		similar_kfs_poses;	//!< A vector containing the poses of the similar KFs wrt this one
+	std::vector<CPose3D>		similar_kfs_poses;	//!< A vector containing the poses of the similar KFs wrt this one
 
 	TLoopClosureInfo() : 
-		similar_kfs( vector<TKeyFrameID>() ), 
+		similar_kfs( std::vector<TKeyFrameID>() ), 
 		lc_id(INVALID_KF_ID), 
-		similar_kfs_poses(vector<CPose3D>()) 
+		similar_kfs_poses(std::vector<CPose3D>()) 
 	{}
 } TLoopClosureInfo;
 
@@ -83,7 +82,7 @@ typedef struct TGeneralOptions
 			pause_after_show_op,				//!< [bool] (def:false) -- Pause application after showing parameters
 			pause_at_each_iteration;			//!< [bool] (def:false) -- Pause application after each iteration
 			
-	string	out_dir,							//!< [string] (def:'') -- Application output folder
+	std::string	out_dir,							//!< [string] (def:'') -- Application output folder
 			rawlog_file,						//!< [string] (def:'') -- Rawlog file path
 			state_file,							//!< [string] (def:'') -- File where to save/load the application state (TO DO)
 			image_dir_url,						//!< [string] (def:'') -- Image folder path
@@ -162,31 +161,31 @@ typedef struct TGeneralOptions
 	/** Show options */
 	void dumpToConsole( )
 	{
-		cout << "---------------------------------------------------------" << endl;
-		cout << " Application options" << endl;
-		cout << "---------------------------------------------------------" << endl;
+		std::cout << "---------------------------------------------------------" << std::endl;
+		std::cout << " Application options" << std::endl;
+		std::cout << "---------------------------------------------------------" << std::endl;
 		if( cap_src == csRawlog )
-			cout << "	:: Rawlog file: " << endl << "	   " << rawlog_file << endl;
+			std::cout << "	:: Rawlog file: " << std::endl << "	   " << rawlog_file << std::endl;
 		else if( cap_src == csImgDir )
 		{
-			cout << "	:: Image directory: " << endl << "	   " << image_dir_url << endl;
-			cout << "	:: Left image format: " << left_format << endl;
-			cout << "	:: Right image format: " << right_format << endl;
-			cout << "	:: Start index: " << start_index << endl;
-			cout << "	:: End index: " << end_index << endl;
+			std::cout << "	:: Image directory: " << std::endl << "	   " << image_dir_url << std::endl;
+			std::cout << "	:: Left image format: " << left_format << std::endl;
+			std::cout << "	:: Right image format: " << right_format << std::endl;
+			std::cout << "	:: Start index: " << start_index << std::endl;
+			std::cout << "	:: End index: " << end_index << std::endl;
 		}
 
-		cout << "	:: Steps: From " << from_step << " to " << to_step << endl;
-		cout << "	:: Max number of keyframes "; max_num_kfs > 0 ? cout << max_num_kfs : cout << " unlimited"; cout << endl;
+		std::cout << "	:: Steps: From " << from_step << " to " << to_step << std::endl;
+		std::cout << "	:: Max number of keyframes "; max_num_kfs > 0 ? std::cout << max_num_kfs : std::cout << " unlimited"; std::cout << std::endl;
 		DUMP_BOOL_VAR_TO_CONSOLE("	:: Debug?: ", debug)
 		DUMP_BOOL_VAR_TO_CONSOLE("	:: Show3D?: ", show3D)
 		DUMP_BOOL_VAR_TO_CONSOLE("	:: Enable time logger?: ", enable_logger)
-		cout << "	:: Output directory: '" << out_dir << "'" << endl;
+		std::cout << "	:: Output directory: '" << out_dir << "'" << std::endl;
 		DUMP_BOOL_VAR_TO_CONSOLE("	:: Load state from file?: ", load_state_from_file)
 		DUMP_BOOL_VAR_TO_CONSOLE("	:: Save state to file?: ", save_state_to_file)
 		DUMP_BOOL_VAR_TO_CONSOLE("	:: Pause at each iteration?: ", pause_at_each_iteration)
 
-		if( load_state_from_file || save_state_to_file) cout << "	:: State file: " << state_file << endl;
+		if( load_state_from_file || save_state_to_file) std::cout << "	:: State file: " << state_file << std::endl;
 		
 		if( pause_after_show_op )  system::pause();
 	}
@@ -401,60 +400,60 @@ typedef struct TSRBAStereoSLAMOptions
 	/** Show options on the console */
 	void dumpToConsole( )
 	{
-		cout << "---------------------------------------------------------" << endl;
-		cout << " Stereo SLAM system with the following options" << endl;
-		cout << "---------------------------------------------------------" << endl;
+		std::cout << "---------------------------------------------------------" << std::endl;
+		std::cout << " Stereo SLAM system with the following options" << std::endl;
+		std::cout << "---------------------------------------------------------" << std::endl;
 		
 		// General options
-		cout << " [General] " << endl;
-		cout << "	Max tree depth: " << srba_max_tree_depth << endl;
-		cout << "	Max optimization depth: " << srba_max_optimize_depth << endl;
-		cout << "	Submap size: " << srba_submap_size << endl;
+		std::cout << " [General] " << std::endl;
+		std::cout << "	Max tree depth: " << srba_max_tree_depth << std::endl;
+		std::cout << "	Max optimization depth: " << srba_max_optimize_depth << std::endl;
+		std::cout << "	Submap size: " << srba_submap_size << std::endl;
 		DUMP_BOOL_VAR_TO_CONSOLE("	Use robust kernel in optimization (stage 1): ", srba_use_robust_kernel_stage1)
 		DUMP_BOOL_VAR_TO_CONSOLE("	Use robust kernel in optimization: ", srba_use_robust_kernel)
 		if( srba_use_robust_kernel_stage1 || srba_use_robust_kernel )
-		cout << "	Robust kernel parameter: " << srba_kernel_param << endl;
+		std::cout << "	Robust kernel parameter: " << srba_kernel_param << std::endl;
 
 		// Detection options
-		cout << " [Detection] " << endl;
-		cout << "	Detection method: "; detect_method == 0 ? cout << "ORB" : cout << "FAST+ORB"; cout << endl;
-		cout << "	Number of keypoints to detect: " << n_feats << endl;
+		std::cout << " [Detection] " << std::endl;
+		std::cout << "	Detection method: "; detect_method == 0 ? std::cout << "ORB" : std::cout << "FAST+ORB"; std::cout << std::endl;
+		std::cout << "	Number of keypoints to detect: " << n_feats << std::endl;
 		DUMP_BOOL_VAR_TO_CONSOLE("	Use adaptive FAST threshold in ORB: ", orb_adaptive_fast_th)
-		cout << "	Initial FAST Threshold for ORB keypoints: " << detect_fast_th << endl;
-		cout << "	Minimum number of matches to force adaptation of FAST/ORB thresholds: " << adaptive_th_min_matches << endl;
+		std::cout << "	Initial FAST Threshold for ORB keypoints: " << detect_fast_th << std::endl;
+		std::cout << "	Minimum number of matches to force adaptation of FAST/ORB thresholds: " << adaptive_th_min_matches << std::endl;
 
 		// matching_options.dumpToConsole();
 
 		// Data association options
-		cout << " [Data Association] " << endl;
+		std::cout << " [Data Association] " << std::endl;
 		DUMP_BOOL_VAR_TO_CONSOLE("	Filter by match direction?: ", da_filter_by_direction)
 		DUMP_BOOL_VAR_TO_CONSOLE("	Filter by ORB distance?: ", da_filter_by_orb_distance)
 		DUMP_BOOL_VAR_TO_CONSOLE("	Filter by fundamental matrix?: ", da_filter_by_fund_matrix)
 		DUMP_BOOL_VAR_TO_CONSOLE("	Filter by pose change?: ", da_filter_by_pose_change)
 
-		cout << "	Stage 2 filtering method: ";
+		std::cout << "	Stage 2 filtering method: ";
 		switch( da_stage2_method )
 		{
-			case ST2M_NONE : cout << "None"; break;
-			case ST2M_FUNDMATRIX : cout << "Fundamental matrix"; break;
-			case ST2M_CHANGEPOSE : cout << "Change in pose"; break;
-			case ST2M_BOTH : cout << "Fundamental matrix + Change in pose"; break;
+			case ST2M_NONE : std::cout << "None"; break;
+			case ST2M_FUNDMATRIX : std::cout << "Fundamental matrix"; break;
+			case ST2M_CHANGEPOSE : std::cout << "Change in pose"; break;
+			case ST2M_BOTH : std::cout << "Fundamental matrix + Change in pose"; break;
 		} 
-		cout << endl;
+		std::cout << std::endl;
 
-		cout << "	Residual threshold: " << residual_th << endl;
-		cout << "	Max feat dist to ep-line in inter-frame matching: " << max_y_diff_epipolar << " px." << endl;
-		cout << "	Max distance between ORB descriptors for data association: " << max_orb_distance_da << endl;
-		cout << "	Probability of RANSAC Fundamental Matrix fit: " << ransac_fit_prob << endl;
-		cout << "	DB query result minimum value to keep running: " << query_score_th << endl;
+		std::cout << "	Residual threshold: " << residual_th << std::endl;
+		std::cout << "	Max feat dist to ep-line in inter-frame matching: " << max_y_diff_epipolar << " px." << std::endl;
+		std::cout << "	Max distance between ORB descriptors for data association: " << max_orb_distance_da << std::endl;
+		std::cout << "	Probability of RANSAC Fundamental Matrix fit: " << ransac_fit_prob << std::endl;
+		std::cout << "	DB query result minimum value to keep running: " << query_score_th << std::endl;
 
 		// KF creation options
-		cout << " [Key-frame creation] " << endl;
-		cout << "	Initial threshold for testing new KF: " << max_translation << " m. and " << max_rotation << " deg." << endl;
-		cout << "	Update map when # of inter-frame (IF) matches is below: " << updated_matches_th << endl;
-		cout << "	Adapt movement th. when # of IF matches is below: " << up_matches_th_plus+updated_matches_th << endl;
-		cout << "	KF distance to consider a Loop Closure (LC): " << lc_distance << endl;
-		cout << "	Threshold for the number of tracked features from last KF: " << vo_id_tracking_th << endl;
+		std::cout << " [Key-frame creation] " << std::endl;
+		std::cout << "	Initial threshold for testing new KF: " << max_translation << " m. and " << max_rotation << " deg." << std::endl;
+		std::cout << "	Update map when # of inter-frame (IF) matches is below: " << updated_matches_th << std::endl;
+		std::cout << "	Adapt movement th. when # of IF matches is below: " << up_matches_th_plus+updated_matches_th << std::endl;
+		std::cout << "	KF distance to consider a Loop Closure (LC): " << lc_distance << std::endl;
+		std::cout << "	Threshold for the number of tracked features from last KF: " << vo_id_tracking_th << std::endl;
 		DUMP_BOOL_VAR_TO_CONSOLE("	Use initial pose?: ", use_initial_pose)
 
 		if( pause_after_show_op )  system::pause();
@@ -482,9 +481,9 @@ typedef struct TStatsSRBA
 		numberKFs(_numberKFs)
 	{}
 } TStatsSRBA;
-typedef vector<TStatsSRBA> TStatsSRBAVector;
+typedef std::vector<TStatsSRBA> TStatsSRBAVector;
 
-typedef vector< pair<int,float> > t_vector_pair_idx_distance;
+typedef std::vector< std::pair<int,float> > t_vector_pair_idx_distance;
 
 // These are static methods (only available when the header file is included)
 // -- comparison methods

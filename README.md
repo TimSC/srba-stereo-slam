@@ -40,7 +40,6 @@ This software can be compiled in Windows and GNU/Linux with `gcc` or `clang`. It
 
         mkdir build
         cd build
-        cmake .. -DSRBA_DIR=[PATH_TO_SRBA_BUILD_DIR]
-
+        cmake .. -DSRBA_DIR=[PATH_TO_SRBA_BUILD_DIR] -DVO_DIR=../../stereo-vo/build -DVO_SRC=../../stereo-vo -DBOW2_DIR=../../DBoW2
 
 

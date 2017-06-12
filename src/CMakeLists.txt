@@ -4,25 +4,33 @@ FIND_PACKAGE(SRBA REQUIRED)
 INCLUDE_DIRECTORIES(${SRBA_INCLUDE_DIRS})
 
 FIND_PACKAGE(MRPT REQUIRED ${SRBA_REQUIRED_MRPT_MODULES} obs gui opengl vision hwdrivers graphslam)
-FIND_PACKAGE(OpenCV 2.4.5 REQUIRED)
+FIND_PACKAGE(OpenCV REQUIRED)
+
+option(SRBA_DIR "Path to SRBA" "")
+MESSAGE( STATUS "SRBA_DIR:    " ${SRBA_DIR} )
+
+option(VO_SRC "Path to VO project dir" "")
+MESSAGE( STATUS "VO_SRC:    " ${VO_SRC} )
+
+option(VO_DIR "Path to VO build dir" "")
+MESSAGE( STATUS "VO_DIR:    " ${VO_DIR} )
+
+option(BOW2_DIR "Path to BoW2 project dir" "")
+MESSAGE( STATUS "BOW2_DIR:    " ${BOW2_DIR} )
+
+option(BOW2_BUILD "Path to BoW2 build dir" "")
+MESSAGE( STATUS "BOW2_BUILD:    " ${BOW2_BUILD} )
+
+option(BOOST_INC_DIR "Path to boost includes" "")
+MESSAGE( STATUS "BOOST_INC_DIR:    " ${BOOST_INC_DIR} )
 
 SET( VO_LIB_DIR 
-		"" CACHE PATH 
-		"Visual Odometry Library directory" )
+		${VO_DIR}/lib )
 SET( VO_INC_DIR 
-		"" CACHE PATH 
-		"Visual Odometry Include directory" )
+		${VO_SRC}/libstereo-odometry/include )
 
-SET( BOW2_DIR 
-		"" CACHE PATH 
-		"BoW2 path")
-		
-SET( BOOST_INC_DIR 
-		"" CACHE PATH 
-		"Boost include dir" )
-
-SET( BOW2_LIB_RELEASE_DIR ${BOW2_DIR}/lib )
-SET( BOW2_LIB_DEBUG_DIR ${BOW2_DIR}/lib )
+SET( BOW2_LIB_RELEASE_DIR ${BOW2_BUILD} )
+SET( BOW2_LIB_DEBUG_DIR ${BOW2_BUILD} )
 
 IF(UNIX)
 	SET( VO_LIBS_RELEASE ${VO_LIB_DIR}/libstereo-odometry.so )
@@ -35,10 +43,8 @@ ENDIF(UNIX)
 INCLUDE_DIRECTORIES( 
 		${VO_INC_DIR} 
 		${BOOST_INC_DIR}
-		${BOW2_DIR}/DBoW2 
-		${BOW2_DIR}/DUtils 
-		${BOW2_DIR}/DUtilsCV 
-		${BOW2_DIR}/DVision )
+		${BOW2_DIR}/include/DBoW2 
+		${BOW2_BUILD}/dependencies/src/DLib/include )
 
 # Declare the target (an executable)
 ADD_EXECUTABLE( srba-stereo-slam
@@ -51,41 +57,34 @@ ADD_EXECUTABLE( srba-stereo-slam
 
 # NOTE: It seems crucial the order of the linking libs!! First, our lib, then MRPT ones
 IF(UNIX)
-	SET( LINK_LIBRARIES_RELEASE 
+	TARGET_LINK_LIBRARIES( srba-stereo-slam 
 		optimized ${VO_LIBS_RELEASE} 
 		optimized ${BOW2_LIB_RELEASE_DIR}/libDUtils.so 
 		optimized ${BOW2_LIB_RELEASE_DIR}/libDUtilsCV.so 
 		optimized ${BOW2_LIB_RELEASE_DIR}/libDVision.so 
-		optimized ${BOW2_LIB_RELEASE_DIR}/libDBoW2.so )
-
-	SET( LINK_LIBRARIES_DEBUG debug 
-		${VO_LIBS_DEBUG} 
-		${BOW2_LIB_DEBUG_DIR}/libDUtils.so 
-		${BOW2_LIB_DEBUG_DIR}/libDUtilsCV.so 
-		${BOW2_LIB_DEBUG_DIR}/libDVision.so 
-		${BOW2_LIB_DEBUG_DIR}/libDBoW2.so )
+		optimized ${BOW2_LIB_RELEASE_DIR}/libDBoW2.so
+		debug ${VO_LIBS_DEBUG} 
+		debug ${BOW2_LIB_DEBUG_DIR}/libDUtils.so 
+		debug ${BOW2_LIB_DEBUG_DIR}/libDUtilsCV.so 
+		debug ${BOW2_LIB_DEBUG_DIR}/libDVision.so 
+		debug ${BOW2_LIB_DEBUG_DIR}/libDBoW2.so 
+		${MRPT_LIBS}
+		${OpenCV_LIBS} )
 ELSE(UNIX)
-	SET( LINK_LIBRARIES_RELEASE 
+	TARGET_LINK_LIBRARIES( srba-stereo-slam 
+		debug ${VO_LIBS_DEBUG} 
+		debug ${BOW2_LIB_DEBUG_DIR}/Debug/libDUtils.lib 
+		debug ${BOW2_LIB_DEBUG_DIR}/Debug/libDUtilsCV.lib 
+		debug ${BOW2_LIB_DEBUG_DIR}/Debug/libDVision.lib 
+		debug ${BOW2_LIB_DEBUG_DIR}/Debug/libDBoW2.lib 
 		optimized ${VO_LIBS_RELEASE} 
 		optimized ${BOW2_LIB_RELEASE_DIR}/Release/libDUtils.lib 
 		optimized ${BOW2_LIB_RELEASE_DIR}/Release/libDUtilsCV.lib 
 		optimized ${BOW2_LIB_RELEASE_DIR}/Release/libDVision.lib 
-		optimized ${BOW2_LIB_RELEASE_DIR}/Release/libDBoW2.lib )
-
-	SET( LINK_LIBRARIES_DEBUG debug 
-		${VO_LIBS_DEBUG} 
-		${BOW2_LIB_DEBUG_DIR}/Debug/libDUtils.lib 
-		${BOW2_LIB_DEBUG_DIR}/Debug/libDUtilsCV.lib 
-		${BOW2_LIB_DEBUG_DIR}/Debug/libDVision.lib 
-		${BOW2_LIB_DEBUG_DIR}/Debug/libDBoW2.lib )
+		optimized ${BOW2_LIB_RELEASE_DIR}/Release/libDBoW2.lib
+		${MRPT_LIBS}
+		${OpenCV_LIBS} )
 ENDIF(UNIX)
-
-TARGET_LINK_LIBRARIES( 
-	srba-stereo-slam 
-	${LINK_LIBRARIES_RELEASE} 
-	${LINK_LIBRARIES_DEBUG}
-	${MRPT_LIBS}
-	${OpenCV_LIBS} )
 
 # Add user supplied extra options (optimization, etc...)
 IF(MSVC)
