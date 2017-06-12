@@ -29,9 +29,6 @@ SET( VO_LIB_DIR
 SET( VO_INC_DIR 
 		${VO_SRC}/libstereo-odometry/include )
 
-SET( BOW2_LIB_RELEASE_DIR ${BOW2_BUILD} )
-SET( BOW2_LIB_DEBUG_DIR ${BOW2_BUILD} )
-
 IF(UNIX)
 	SET( VO_LIBS_RELEASE ${VO_LIB_DIR}/libstereo-odometry.so )
 	SET( VO_LIBS_DEBUG ${VO_LIB_DIR}/libstereo-odometry.so )
@@ -57,20 +54,20 @@ ADD_EXECUTABLE( srba-stereo-slam
 
 # NOTE: It seems crucial the order of the linking libs!! First, our lib, then MRPT ones
 IF(UNIX)
+    find_library(BOW2_LIBRARY DBoW2 HINTS ${BOW2_BUILD})
+    find_library(DLIB_LIBRARY DLib HINTS ${BOW2_BUILD}/dependencies/install/lib)
+	target_link_libraries( srba-stereo-slam ${BOW2_LIBRARY} ${DLIB_LIBRARY} )
+
+	MESSAGE( STATUS "BOW2_LIBRARY:    " ${BOW2_LIBRARY} )
+
 	TARGET_LINK_LIBRARIES( srba-stereo-slam 
 		optimized ${VO_LIBS_RELEASE} 
-		optimized ${BOW2_LIB_RELEASE_DIR}/libDUtils.so 
-		optimized ${BOW2_LIB_RELEASE_DIR}/libDUtilsCV.so 
-		optimized ${BOW2_LIB_RELEASE_DIR}/libDVision.so 
-		optimized ${BOW2_LIB_RELEASE_DIR}/libDBoW2.so
-		debug ${VO_LIBS_DEBUG} 
-		debug ${BOW2_LIB_DEBUG_DIR}/libDUtils.so 
-		debug ${BOW2_LIB_DEBUG_DIR}/libDUtilsCV.so 
-		debug ${BOW2_LIB_DEBUG_DIR}/libDVision.so 
-		debug ${BOW2_LIB_DEBUG_DIR}/libDBoW2.so 
 		${MRPT_LIBS}
 		${OpenCV_LIBS} )
 ELSE(UNIX)
+	SET( BOW2_LIB_RELEASE_DIR ${BOW2_BUILD} )
+	SET( BOW2_LIB_DEBUG_DIR ${BOW2_BUILD} )
+
 	TARGET_LINK_LIBRARIES( srba-stereo-slam 
 		debug ${VO_LIBS_DEBUG} 
 		debug ${BOW2_LIB_DEBUG_DIR}/Debug/libDUtils.lib 
